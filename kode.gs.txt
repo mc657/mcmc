@@ -1,0 +1,43 @@
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index');
+}
+
+function getMessages() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const data = sheet.getDataRange().getValues();
+
+  if (data.length <= 1) {
+    return []; // No data after headers
+  }
+
+  const rows = data.slice(1); // Skip headers
+  return rows.map(row => ({
+    User: row[1], // Column B (User)
+    Message: row[2], // Column C (Message)
+  }));
+}
+
+// Function to add a new message
+function addMessage(user, message) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const timestamp = new Date(); // Add timestamp for the new message
+  sheet.appendRow([timestamp, user, message]); // Append data to the sheet
+  return 'Message added successfully!';
+}
+
+function deleteMessages() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const range = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()); // Start from row 2
+  range.clearContent(); // Clears all content but leaves formatting
+}
+
+
+function addMessage(user, message) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  
+  // Get the current timestamp
+  const timestamp = new Date(); 
+  
+  // Append a new row with the timestamp, user, and message
+  sheet.appendRow([timestamp, user, message]);
+}

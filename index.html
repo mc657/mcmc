@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat</title>
+    <style>
+      body {
+        background-color: black;
+        color: white;
+        font-family: Arial, sans-serif;
+      }
+      #messages {
+        border: 1px solid #ccc;
+        padding: 10px;
+        min-height: 200px;
+        font-family: Arial, sans-serif;
+        background-color: black;
+        color: white;
+        width: 567px;
+        height: 500px;
+        overflow-y: scroll; /* Allow vertical scrolling */
+        scrollbar-width: none; /* Firefox: Remove scrollbar */
+      }
+      /* Remove scrollbar for Chrome, Edge, and Safari */
+      #messages::-webkit-scrollbar {
+        width: 0px; /* Hide the scrollbar */
+      }
+      .message-entry {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #1e1e1e; /* Slightly lighter black for contrast */
+      }
+      .message-entry strong {
+        display: block;
+      }
+      .message-entry strong:nth-child(1) {
+        color: green; /* Name in green */
+      }
+      .message-entry strong:nth-child(2) {
+        color: white; /* Message in white */
+      }
+      .input-container {
+        margin-top: 20px;
+      }
+      input,
+      button {
+        margin: 5px;
+        padding: 10px;
+      }
+      input {
+        background-color: #333;
+        color: white;
+        border: 1px solid #555;
+      }
+      button {
+        background-color: #444;
+        color: white;
+        border: 1px solid #555;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #555;
+      }
+      button[style] {
+        background-color: red !important;
+      }
+    </style>
+    <script>
+      // Fetch messages from the server
+      async function fetchMessages() {
+        const messagesDiv = document.getElementById("messages");
+        messagesDiv.innerHTML = "Loading messages...";
+
+        try {
+          google.script.run.withSuccessHandler(displayMessages).getMessages();
+        } catch (error) {
+          console.error("Error fetching messages:", error);
+          messagesDiv.innerHTML = "Failed to load messages.";
+        }
+      }
+
+      // Display messages on the webpage
+      function displayMessages(data) {
+        const messagesDiv = document.getElementById("messages");
+        messagesDiv.innerHTML = ""; // Clear loading text
+
+        if (!data || data.length === 0) {
+          messagesDiv.innerHTML = "Kosong";
+          return;
+        }
+
+        // Display each row in a separate message entry
+        data.forEach((row) => {
+          const entry = document.createElement("div");
+          entry.className = "message-entry";
+          entry.innerHTML = `
+            <strong>${row.User}</strong>
+            <strong>${row.Message}</strong>
+          `;
+          messagesDiv.appendChild(entry);
+        });
+      }
+
+      // Send a new message
+      function sendMessage() {
+        const userInput = document.getElementById("userInput").value.trim();
+        const messageInput = document.getElementById("messageInput").value.trim();
+
+        if (!userInput || !messageInput) {
+          alert("Isi Nama Dan Chat");
+          return;
+        }
+
+        // Save name to localStorage for persistence
+        localStorage.setItem("userName", userInput);
+
+        google.script.run.withSuccessHandler(() => {
+          fetchMessages(); // Refresh messages after sending
+        }).addMessage(userInput, messageInput);
+
+        // Clear the message input field but keep the name
+        document.getElementById("messageInput").value = "";
+      }
+
+      // Delete all messages
+      function deleteAllMessages() {
+        if (confirm("Hapus semua?")) {
+          google.script.run.withSuccessHandler(() => {
+            alert("Done.");
+            fetchMessages(); // Refresh to show no messages
+          }).deleteMessages();
+        }
+      }
+
+      // Load the saved user name from localStorage
+      function loadUserName() {
+        const savedName = localStorage.getItem("userName");
+        if (savedName) {
+          document.getElementById("userInput").value = savedName;
+        }
+      }
+
+      // Fetch messages and load user name when the page loads
+      window.onload = () => {
+        fetchMessages();
+        loadUserName();
+      };
+    </script>
+  </head>
+  <body>
+    <h1>Q/A</h1>
+    <div id="messages">tunggu sadiki kaka</div>
+
+    <div class="input-container">
+      <input id="userInput" type="text" placeholder="Nama" />
+      <input id="messageInput" type="text" placeholder="Ketik di sini" />
+      <button onclick="sendMessage()">Kirim</button>
+      <button onclick="deleteAllMessages()" style="background-color: red; color: white;">Hapus Semua</button>
+    </div>
+  </body>
+</html>
